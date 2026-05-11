@@ -345,6 +345,7 @@ private object ComponentType {
 private[javasdk] object Sdk {
   final case class StartupContext(
       componentClients: ComponentClients,
+      memoryClient: MemoryClient,
       dependencyProvider: Option[DependencyProvider],
       httpClientProvider: HttpClientProvider,
       grpcClientProvider: GrpcClientProviderImpl,
@@ -918,6 +919,7 @@ private final class Sdk(
           startedPromise.trySuccess(
             StartupContext(
               runtimeComponentClients,
+              memoryClient,
               None,
               httpClientProvider,
               grpcClientProvider,
@@ -936,6 +938,7 @@ private final class Sdk(
           startedPromise.trySuccess(
             StartupContext(
               runtimeComponentClients,
+              memoryClient,
               dependencyProviderOpt,
               httpClientProvider,
               grpcClientProvider,
