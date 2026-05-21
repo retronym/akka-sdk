@@ -30,7 +30,7 @@
       <plugin>
         <groupId>io.akka</groupId>
         <artifactId>akka-runtime-dev-maven-plugin</artifactId>
-        <version>1.6.0-7-d47f8ba2-dev-SNAPSHOT</version>
+        <version>1.6.0-8-ccce2663-dev-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>
