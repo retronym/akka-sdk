@@ -15,4 +15,78 @@
 
   <name>shopping-cart-quickstart</name>
 
+  <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.10.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>io.akka</groupId>
+        <artifactId>akka-runtime-dev-maven-plugin</artifactId>
+        <version>1.6.0-7-d47f8ba2-dev-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exportRuntimeClasspath</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <configuration>
+          <excludeArtifactIds>akka-runtime-dev_2.13</excludeArtifactIds>
+          <outputProperty>dependencies.output</outputProperty>
+          <outputFile>${project.build.directory}/dependencies.txt</outputFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>render-dependencies</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>render-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputType>text</outputType>
+              <includeScope>compile</includeScope>
+              <excludeArtifactsIds>akka-runtime-dev_2.13</excludeArtifactsIds>
+              <template>
+                #foreach($a in $artifacts)
+${a.groupId}:${a.artifactId}:${a.version}|${a.scope}|${a.file.name}|${a.dependencyTrail}
+                #end'
+              </template>
+              <verbose>true</verbose>
+            </configuration>
+          </execution>
+          <execution>
+            <id>render-dependencies1</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>render-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputType>text</outputType>
+              <includeScope>compile</includeScope>
+              <graphRoot></graphRoot>
+              <excludeArtifactsIds>akka-runtime-dev_2.13</excludeArtifactsIds>
+              <template>
+                #foreach($a in $artifacts)
+${a.groupId}:${a.artifactId}:${a.version}|${a.scope}|${a.file.name}|${a.dependencyTrail}
+                #end'
+              </template>
+              <verbose>true</verbose>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
