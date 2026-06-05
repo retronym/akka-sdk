@@ -130,11 +130,26 @@ object Dependencies {
         // These two are for the eventing testkit
         akkaDependency("akka-actor-testkit-typed"),
         akkaDependency("akka-stream-testkit"),
+        akkaDependency("akka-persistence"),
         akkaDependency("akka-testkit"),
         kalixTestkitProtocol % "protobuf-src",
-        // FIXME use by the testkit itself but should not be on user test classpath
-        //      should possibly be provided or runtime here and added for the test runner in project parent pom
-        AkkaDevRuntime,
+
+        // We need to compile against this to access protobuf generated types
+        // from akka-runtimes proxy-protocol and testkit-protocol sub-projects
+        // that are packaged in akka-runtime-dev. But we don't want to impose
+        // the transitive dependency of akka-runtime-dev on the users compile
+        // _and_ runtime classpaths.
+        //
+        // "Provided" will add this dependency to _our_ compile classpath
+        // "Runtime" will add this dependency (but not its transitive deps) to the users
+        // runtime classpath. SBT's MakePom will prioritize "Runtime" in the generated pom.
+        //
+        // Perhaps cleaner would be to refactor akka-runtime-dev to modularize
+        // the proxy-protocol and testkit-protocol sub-projects into separately
+        // consumable modules.
+        AkkaDevRuntime % Provided,
+        AkkaDevRuntime % Runtime,
+
         // user will interface with these
         junit5,
         // convenience-transitive dependencies for user assertions and async interactions
