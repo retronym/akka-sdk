@@ -739,6 +739,12 @@
                 <groupId>io.akka</groupId>
                 <artifactId>akka-javasdk-testkit</artifactId>
                 <version>${akka-javasdk.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.akka</groupId>
+                <artifactId>akka-runtime-dev</artifactId>
+                <version>${akka-javasdk.version}</version>
             </dependency>
             <!-- Align the SPI with the runtime version rather than the one the SDK was built against.
                  In production the runtime provides the SPI (it is excluded from the service image above),
@@ -771,7 +777,14 @@
         <dependency>
             <groupId>io.akka</groupId>
             <artifactId>akka-runtime-dev_2.13</artifactId>
-            <scope>runtime</scope>
+            <version>${akka-runtime.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
