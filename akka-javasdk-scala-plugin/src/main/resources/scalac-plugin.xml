@@ -1,0 +1,4 @@
+<plugin>
+  <name>akka-component-plugin</name>
+  <classname>akka.javasdk.tooling.scalaplugin.ComponentPlugin</classname>
+</plugin>

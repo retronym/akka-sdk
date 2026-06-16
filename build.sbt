@@ -21,15 +21,17 @@ lazy val `akka-javasdk-root` = project
   .aggregate(
     akkaJavaSdkValidations,
     akkaJavaSdkAnnotationProcessor,
+    akkaJavaSdkScalaPlugin,
     akkaJavaSdk,
     akkaJavaSdkTestKit,
     akkaJavaSdkTests,
     akkaJavaSdkEnforcer,
     akkaJavaSdkParent)
-  // samplesCompilationProject and annotationProcessorTestProject are composite project
-  // to aggregate them we need to map over them
+  // samplesCompilationProject, annotationProcessorTestProject, and scalaPluginTestProject are
+  // composite projects — to aggregate them we need to map over them
   .aggregate(samplesCompilationProject.componentProjects.map(p => p: ProjectReference): _*)
   .aggregate(annotationProcessorTestProject.componentProjects.map(p => p: ProjectReference): _*)
+  .aggregate(scalaPluginTestProject.componentProjects.map(p => p: ProjectReference): _*)
   .settings(
     publish / skip := true,
     publishTo := None,
@@ -129,6 +131,16 @@ lazy val akkaJavaSdkAnnotationProcessor =
     .settings(name := "akka-javasdk-annotation-processor", crossPaths := false)
     .settings(libraryDependencies += Dependencies.typesafeConfig)
 
+lazy val akkaJavaSdkScalaPlugin =
+  Project(id = "akka-javasdk-scala-plugin", base = file("akka-javasdk-scala-plugin"))
+    .enablePlugins(Publish)
+    .disablePlugins(CiReleasePlugin) // we use publishSigned, but use a pgp utility from CiReleasePlugin
+    .settings(
+      name := "akka-javasdk-scala-plugin",
+      scalaVersion := Dependencies.ScalaVersion,
+      exportJars := true,
+      libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value % Provided)
+
 lazy val annotationProcessorTestProject: CompositeProject =
   AnnotationProcessorTestProject.compilationProject { sampleProject =>
     sampleProject
@@ -142,6 +154,18 @@ lazy val annotationProcessorTestProject: CompositeProject =
           "akka.javasdk.tooling.processor.ComponentAnnotationProcessor",
           "-Aakka.javasdk.groupId=com.example",
           "-Aakka.javasdk.artifactId=test"))
+  }
+
+lazy val scalaPluginTestProject: CompositeProject =
+  ScalaPluginTestProject.compilationProject { sampleProject =>
+    sampleProject
+      .dependsOn(akkaJavaSdk, akkaJavaSdkScalaPlugin % Configurations.CompilerPlugin)
+      .settings(
+        libraryDependencies += Dependencies.scalaTest % Test,
+        autoCompilerPlugins := true,
+        Compile / scalacOptions ++= Seq(
+          "-P:akka-component-plugin:groupId=com.example",
+          "-P:akka-component-plugin:artifactId=test"))
   }
 
 lazy val akkaJavaSdkEnforcer =
