@@ -62,7 +62,35 @@ public record RuntimeTypeDef(Class<?> clazz) implements TypeDef {
 
   @Override
   public boolean isSealed() {
-    return clazz.isSealed();
+    return clazz.isSealed() || isScalaSealedInterface();
+  }
+
+  /**
+   * Scala 2.x {@code sealed trait} compiles to a plain JVM interface with no {@code ACC_SEALED} /
+   * {@code PermittedSubclasses} attribute, so {@link Class#isSealed()} returns {@code false}. When
+   * {@code scala-reflect} is on the classpath (always the case inside {@code akka-javasdk} at
+   * runtime), Scala's runtime reflection reads the pickle data stored in {@code @ScalaSignature}
+   * and correctly reports whether the interface was declared sealed.
+   */
+  private boolean isScalaSealedInterface() {
+    if (!clazz.isInterface()) return false;
+    try {
+      ClassLoader cl = clazz.getClassLoader();
+      if (cl == null) cl = Thread.currentThread().getContextClassLoader();
+      // The universe is a lazy val on the scala.reflect.runtime package object.
+      Class<?> pkgClass = Class.forName("scala.reflect.runtime.package$", false, cl);
+      Object pkg = pkgClass.getField("MODULE$").get(null);
+      Object universe = pkgClass.getMethod("universe").invoke(pkg);
+      // universe.runtimeMirror(classLoader): reads @ScalaSignature pickle data
+      Object mirror =
+          universe.getClass().getMethod("runtimeMirror", ClassLoader.class).invoke(universe, cl);
+      // mirror.classSymbol(clazz).isSealed
+      Object classSymbol =
+          mirror.getClass().getMethod("classSymbol", Class.class).invoke(mirror, clazz);
+      return (Boolean) classSymbol.getClass().getMethod("isSealed").invoke(classSymbol);
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
   @Override
