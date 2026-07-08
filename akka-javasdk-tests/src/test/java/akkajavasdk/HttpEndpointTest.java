@@ -188,6 +188,39 @@ public class HttpEndpointTest extends TestKitSupport {
   }
 
   @Test
+  public void injectableClassifierClientWorks() {
+    // depends on the "toxicity-test-classifier" config, see test application.conf
+    var response =
+        httpClient.GET("/classify/totally-toxic-content").responseBodyAs(String.class).invoke();
+    assertThat(response.status()).isEqualTo(StatusCodes.OK);
+    assertThat(response.body()).isEqualTo("toxic");
+
+    var directUsageResult =
+        getClassifierClient()
+            .classifier("toxicity-test-classifier")
+            .classify("a perfectly fine message")
+            .toCompletableFuture()
+            .join();
+    assertThat(directUsageResult.label()).contains("clean");
+  }
+
+  @Test
+  public void classifierConstructorCanResolveADependencyProviderSuppliedDependency() {
+    // "dependency-provided-test-classifier" (see test application.conf) takes a
+    // TestGrpcServiceClient constructor param resolvable only via
+    // Bootstrap.createDependencyProvider(), not via any platform-managed inject. If classifier
+    // construction ran before Bootstrap.createDependencyProvider() (the bug fixed in 5334.md
+    // Phase 3.1 item 4), the whole service would fail to start.
+    var result =
+        getClassifierClient()
+            .classifier("dependency-provided-test-classifier")
+            .classify("anything")
+            .toCompletableFuture()
+            .join();
+    assertThat(result.label()).contains("resolved");
+  }
+
+  @Test
   public void shouldHandleBigDecimalOutOfTheBox() {
     var bigDecimal = new java.math.BigDecimal("12345678901234567890.12345678901234567890");
     var response =

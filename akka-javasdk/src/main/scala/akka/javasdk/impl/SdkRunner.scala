@@ -48,6 +48,9 @@ import akka.javasdk.UnhandledExceptionHandler
 import akka.javasdk.agent.Agent
 import akka.javasdk.agent.AgentContext
 import akka.javasdk.agent.AgentRegistry
+import akka.javasdk.agent.Classifier
+import akka.javasdk.agent.ClassifierClient
+import akka.javasdk.agent.ClassifierContext
 import akka.javasdk.agent.ModelProvider
 import akka.javasdk.agent.autonomous.AutonomousAgent
 import akka.javasdk.annotations.Component
@@ -73,6 +76,7 @@ import akka.javasdk.impl.agent.AgentImpl
 import akka.javasdk.impl.agent.AgentImpl.AgentContextImpl
 import akka.javasdk.impl.agent.AgentRegistryImpl
 import akka.javasdk.impl.agent.AutonomousAgentImpl
+import akka.javasdk.impl.agent.ClassifierProvider
 import akka.javasdk.impl.agent.FunctionTools
 import akka.javasdk.impl.agent.GuardrailProvider
 import akka.javasdk.impl.agent.OverrideModelProvider
@@ -132,6 +136,8 @@ import akka.runtime.sdk.spi.RegionInfo
 import akka.runtime.sdk.spi.RemoteIdentification
 import akka.runtime.sdk.spi.SpiAgent
 import akka.runtime.sdk.spi.SpiAutonomousAgent
+import akka.runtime.sdk.spi.SpiClassifierClient
+import akka.runtime.sdk.spi.SpiClassifierSetup
 import akka.runtime.sdk.spi.SpiComponents
 import akka.runtime.sdk.spi.SpiConfiguredGuardrail
 import akka.runtime.sdk.spi.SpiDeployedEventingSettings
@@ -398,6 +404,7 @@ class SdkRunner private (
         startedPromise,
         getSettings,
         startContext.sanitizer,
+        startContext.classifierClient,
         httpMockLookup,
         grpcMockLookup,
         startContext.inMemorySpanExporter)
@@ -452,6 +459,7 @@ private[javasdk] object Sdk {
       overrideModelProvider: OverrideModelProvider,
       serializer: Serializer,
       sanitizer: Sanitizer,
+      classifierClient: ClassifierClient,
       inMemorySpanExporter: Option[InMemorySpanExporter])
 
   private val platformManagedDependency = Set[Class[_]](
@@ -502,6 +510,7 @@ private final class Sdk(
     startedPromise: Promise[StartupContext],
     spiSettings: SpiSettings,
     runtimeSanitizer: SpiSanitizerEngine,
+    runtimeClassifierClient: SpiClassifierClient,
     httpMockLookup: String => Option[
       java.util.function.Function[akka.http.javadsl.model.HttpRequest, akka.http.javadsl.model.HttpResponse]],
     grpcMockLookup: GrpcClientProviderImpl.ClientKey => Option[AkkaGrpcClient],
@@ -576,7 +585,18 @@ private final class Sdk(
       invalid.throwFailureSummary()
   }
 
-  private val guardrailProvider = new GuardrailProvider(system, applicationConfig, sdkTracerFactory)
+  // Constructed before the GuardrailProvider, whose guardrails may need to invoke a classifier.
+  // Deliberately NOT validated here: validateClassifiers() runs from preStart instead (see below),
+  // after ServiceSetup's createDependencyProvider(), so a classifier constructor can depend on the
+  // user's DependencyProvider. Guardrail construction stays eager (agent descriptor building needs
+  // concrete bindings from guardrailProvider.agentGuardrails(...) below), so a classifier reached
+  // only from inside a guardrail's constructor is still constructed here, early -- guardrails
+  // themselves are out of scope for this deferral.
+  private val classifierProvider =
+    new ClassifierProvider(system, applicationConfig, runtimeClassifierClient, wireClassifier)
+
+  private val guardrailProvider =
+    new GuardrailProvider(system, applicationConfig, sdkTracerFactory, classifierProvider.client)
   try {
     guardrailProvider.validate()
   } catch {
@@ -585,7 +605,38 @@ private final class Sdk(
       throw exc
   }
 
+  // Routes classifier construction through the general DI mechanism (classifiers only --
+  // guardrails are left to the separate enhanced-guardrail work), so a classifier's constructor
+  // can declare any of the platform-managed dependencies (HttpClientProvider, ComponentClient,
+  // ...) alongside/instead of ClassifierContext.
+  private def wireClassifier(clz: Class[Classifier], context: ClassifierContext): Classifier =
+    wiredInstance[Classifier]("Classifier", clz) {
+      sideEffectingComponentInjects(None).orElse {
+        case c if c == classOf[ClassifierContext] =>
+          context
+      }
+    }
+
+  // Called from preStart, after dependencyProviderOpt is finalized for this service, so a
+  // classifier constructor needing a user-DependencyProvider-supplied dependency can resolve it.
+  private def validateClassifiers(): Unit =
+    try classifierProvider.validate()
+    catch {
+      case NonFatal(exc) =>
+        logger.error("Invalid classifiers: {}", exc.getMessage, exc)
+        throw exc
+    }
+
   lazy private val sanitizer = SanitizerImpl(runtimeSanitizer)
+  // Root-context handle for callers with no per-call telemetryContext (StartupContext/testkit);
+  // components get a per-injection handle via classifierClient(telemetryContext) below.
+  lazy private val classifierClient: ClassifierClient = classifierProvider.client
+
+  private def classifierClient(telemetryContext: Option[OtelContext]): ClassifierClient =
+    telemetryContext match {
+      case None          => classifierClient
+      case Some(context) => classifierProvider.clientFor(context)
+    }
 
   private def hasComponentId(clz: Class[_]): Boolean = {
     if (clz.hasAnnotation[Component]) {
@@ -771,6 +822,7 @@ private final class Sdk(
                 // remember to update component type API doc and docs if changing the set of injectables
                 case p if p == classOf[EventSourcedEntityContext] => context
                 case s if s == classOf[Sanitizer]                 => sanitizer
+                case c if c == classOf[ClassifierClient]          => classifierClient
                 case r if r == classOf[AgentRegistry]             => agentRegistry
                 case p if p == classOf[NotificationPublisher[_]] =>
                   new NotificationPublisher[Any] {
@@ -824,6 +876,7 @@ private final class Sdk(
                 // remember to update component type API doc and docs if changing the set of injectables
                 case p if p == classOf[KeyValueEntityContext] => context
                 case s if s == classOf[Sanitizer]             => sanitizer
+                case c if c == classOf[ClassifierClient]      => classifierClient
                 case r if r == classOf[AgentRegistry]         => agentRegistry
                 case p if p == classOf[NotificationPublisher[_]] =>
                   new NotificationPublisher[Any] {
@@ -900,7 +953,7 @@ private final class Sdk(
           (new TimedActionDescriptor(
             componentId,
             clz.getName,
-            timedActionSpi,
+            instanceFactory = _ => timedActionSpi,
             name = Reflect.readComponentName(clz),
             description = Reflect.readComponentDescription(clz),
             provided = false,
@@ -939,7 +992,7 @@ private final class Sdk(
             clz.getName,
             consumerSrc,
             consumerDestination(consumerClass),
-            consumerSpi,
+            instanceFactory = _ => consumerSpi,
             name = Reflect.readComponentName(clz),
             description = Reflect.readComponentDescription(clz),
             provided = false,
@@ -1144,8 +1197,9 @@ private final class Sdk(
     case e if e == classOf[Executor]           =>
       // The type does not guarantee this is a Java concurrent Executor, but we know it is, since supplied from runtime
       sdkExecutionContext.asInstanceOf[Executor]
-    case s if s == classOf[Sanitizer] => sanitizer
-    case s if s == classOf[Meter]     => sdkMeter
+    case s if s == classOf[Sanitizer]        => sanitizer
+    case c if c == classOf[ClassifierClient] => classifierClient(telemetryContext)
+    case s if s == classOf[Meter]            => sdkMeter
     case o if o == classOf[ObjectStorageProvider] =>
       objectStorageProvider(telemetryContext)
   }
@@ -1204,6 +1258,7 @@ private final class Sdk(
     val preStart = { (system: ActorSystem[_]) =>
       serviceSetup match {
         case None =>
+          validateClassifiers()
           startedPromise.trySuccess(
             StartupContext(
               runtimeComponentClients,
@@ -1216,6 +1271,7 @@ private final class Sdk(
               overrideModelProvider,
               serializer,
               sanitizer,
+              classifierClient,
               inMemorySpanExporter))
           Future.successful(Done)
         case Some(setup) =>
@@ -1227,6 +1283,7 @@ private final class Sdk(
               dependencyProviderOpt.foreach(_ => logger.info("Service configured with DependencyProvider"))
             }
           }
+          validateClassifiers()
           // Only register the shutdown task if the user actually overrode onShutdown,
           // otherwise we'd add a no-op task to coordinated shutdown for every service.
           val onShutdownOverridden =
@@ -1254,6 +1311,7 @@ private final class Sdk(
               overrideModelProvider,
               serializer,
               sanitizer,
+              classifierClient,
               inMemorySpanExporter))
           Future.successful(Done)
       }
@@ -1319,6 +1377,8 @@ private final class Sdk(
         config = g.config)
     })
 
+    val classifierSetup = new SpiClassifierSetup(classifierProvider.spiConfiguredClassifiers)
+
     val serviceNameOverride = sdkSettings.devModeSettings.map(_.serviceName)
 
     new SpiComponents(
@@ -1329,12 +1389,13 @@ private final class Sdk(
         protocolMajorVersion = BuildInfo.protocolMajorVersion,
         protocolMinorVersion = BuildInfo.protocolMinorVersion),
       componentDescriptors = descriptors,
-      guardrailSetup,
+      guardrailSetup = guardrailSetup,
+      classifierSetup = classifierSetup,
       preStart = preStart,
       onStart = onStart,
       reportError = reportError,
-      healthCheck = () => SdkRunner.FutureDone,
-      onUnhandledException = onUnhandledException)
+      onUnhandledException = onUnhandledException,
+      healthCheck = () => SdkRunner.FutureDone)
   }
 
   private lazy val agentRegistry =
