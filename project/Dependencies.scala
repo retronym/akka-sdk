@@ -8,7 +8,8 @@ object Dependencies {
     val ProtocolVersionMinor = 1
   }
 
-  val AkkaRuntimeVersion = sys.props.getOrElse("akka-runtime.version", "1.6.10")
+  // wip: classifier construct (#5334, 5334.md) -- pin to the ticket/5334 runtime snapshot; squash away before landing.
+  val AkkaRuntimeVersion = sys.props.getOrElse("akka-runtime.version", "1.6.10-26-925307e3-SNAPSHOT")
 
   // NOTE: embedded SDK should have the AkkaVersion aligned, when updating RuntimeVersion, make sure to check
   // if AkkaVersion and AkkaHttpVersion are aligned
