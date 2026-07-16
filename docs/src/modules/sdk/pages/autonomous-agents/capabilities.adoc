@@ -344,4 +344,4 @@ The model decides at runtime whether to delegate a subtask (retaining ownership)
 
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns] for the conceptual background
 * xref:sdk:autonomous-agents/notifications.adoc[Notifications] for events emitted during coordination
-* xref:sdk:autonomous-agents/defining.adoc[Defining an autonomous agent]
+* xref:sdk:autonomous-agents/defining.adoc[Agent definition]

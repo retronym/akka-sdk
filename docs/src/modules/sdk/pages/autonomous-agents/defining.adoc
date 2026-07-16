@@ -1,4 +1,4 @@
-= Defining an autonomous agent
+= Agent definition
 
 include::ROOT:partial$include.adoc[]
 
@@ -97,7 +97,7 @@ include::example$autonomous-agent-playground/src/main/java/demo/pipeline/applica
 
 === Akka components as tools
 
-Components, including Workflows, Event Sourced Entities, Key Value Entities, and Views, can also be used as tools. Pass the component `Class` (not an instance) to `tools()`. See xref:sdk:agents/extending.adoc#component_tools[Using Akka components as function tools] for details, and xref:sdk:agents/extending.adoc[Extending agents with function tools] for the broader reference on tool annotations, parameter descriptions, and return types.
+Components, including Workflows, Event Sourced Entities, Key Value Entities, and Views, can also be used as tools. Pass the component `Class` (not an instance) to `tools()`. See xref:sdk:agents/extending.adoc#component_tools[Using Akka components as function tools] for details, and xref:sdk:agents/extending.adoc[Function tools] for the broader reference on tool annotations, parameter descriptions, and return types.
 
 == MCP tools
 
@@ -208,5 +208,5 @@ NOTE: If the `load` method throws an exception, the current task fails.
 
 * xref:sdk:autonomous-agents/tasks.adoc[Tasks]
 * xref:sdk:autonomous-agents/capabilities.adoc[Coordination capabilities]
-* xref:sdk:agents/extending.adoc[Extending agents with function tools]
+* xref:sdk:agents/extending.adoc[Function tools]
 * xref:sdk:agents/guardrails.adoc[Guardrails]

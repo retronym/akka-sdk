@@ -179,4 +179,4 @@ include::example$doc-snippets/src/main/java/com/example/api/TaskNotificationEndp
 
 * xref:sdk:autonomous-agents/client.adoc[Client API]
 * xref:sdk:autonomous-agents/notifications.adoc[Notifications]
-* xref:sdk:autonomous-agents/defining.adoc[Defining an autonomous agent]
+* xref:sdk:autonomous-agents/defining.adoc[Agent definition]

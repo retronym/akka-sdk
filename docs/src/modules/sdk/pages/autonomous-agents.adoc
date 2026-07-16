@@ -142,7 +142,7 @@ Autonomous agents are tested in integration tests with a `TestModelProvider` reg
 
 == Autonomous agent topics
 
-xref:sdk:autonomous-agents/defining.adoc[Defining an autonomous agent]:: Building an `AgentDefinition`: accepted task types, tools, MCP endpoints, guardrails, iteration limit, model selection, and optional instructions. Covers how the `@Component` description captures the agent's purpose and expected outcome.
+xref:sdk:autonomous-agents/defining.adoc[Agent definition]:: Building an `AgentDefinition`: accepted task types, tools, MCP endpoints, guardrails, iteration limit, model selection, and optional instructions. Covers how the `@Component` description captures the agent's purpose and expected outcome.
 
 xref:sdk:autonomous-agents/tasks.adoc[Tasks]:: Defining task types, creating instances with instructions and attachments, the task lifecycle, querying typed results, declaring dependencies between tasks.
 

@@ -1,10 +1,8 @@
-= Extending agents with function tools
+= Function tools
 
 include::ROOT:partial$include.adoc[]
 
-You may frequently hear people say things like "the LLM can make a call" or "the LLM can use a tool". While these statements get the point across, they are not entirely accurate. In truth, the agent will tell the LLM which _tools_ are available for use. The LLM then determines from the prompt which tools it needs to call and with which parameters.
-
-The Agent will then in turn execute the tool requested by the LLM, incorporate the tool results into the session context, and then send a new prompt. This will continue in a loop until the LLM no longer indicates it needs to invoke a tool to perform its task.
+Function tools are Java methods that an agent makes available to the model. The agent tells the model which tools exist, and the model determines from the prompt which tools to request and with which parameters. The agent then executes the requested tool, incorporates the result into the session context, and sends a new prompt. This continues in a loop until the model no longer requests a tool.
 
 There are four ways to add function tools to your agent:
 

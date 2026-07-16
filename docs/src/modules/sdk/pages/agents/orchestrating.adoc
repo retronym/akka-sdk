@@ -1,4 +1,4 @@
-= Orchestrating multiple agents
+= Multi-agent orchestration
 
 include::ROOT:partial$include.adoc[]
 

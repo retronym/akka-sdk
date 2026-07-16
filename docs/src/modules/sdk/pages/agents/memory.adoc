@@ -1,8 +1,8 @@
-= Managing session memory
+= Session memory
 
 include::ROOT:partial$include.adoc[]
 
-Session Memory provides a history mechanism that enables agents to maintain context across multiple interactions. This feature is essential for building agents that can remember previous exchanges with users, understand context, and provide coherent responses over time.
+Session Memory provides a history mechanism that enables agents to maintain context across multiple interactions. Agents use it to remember previous exchanges with users and provide coherent responses over time.
 
 When an agent interacts with an AI model, both the user message and the AI response are automatically stored in the session memory. These messages are then included as additional context in subsequent requests to the model, allowing it to reference previous parts of the interaction.
 
@@ -218,5 +218,5 @@ The session memory can be replicated to other regions, but it has the multi-regi
 == See also
 
 * xref:sdk:agents.adoc[Agents]
-* xref:sdk:agents/prompt.adoc[Choosing the prompt]
+* xref:sdk:agents/prompt.adoc[Prompts]
 * xref:sdk:sanitization.adoc[Data sanitization]

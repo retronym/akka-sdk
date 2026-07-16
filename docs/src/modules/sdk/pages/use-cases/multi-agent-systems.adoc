@@ -47,7 +47,7 @@ The xref:sdk:autonomous-agents.adoc#samples[autonomous-agent-playground] include
 
 == Workflow-supervised alternative
 
-For request-based xref:sdk:agents.adoc[Agents] coordinated through a xref:sdk:workflows.adoc[Workflow] supervisor, see xref:sdk:agents/orchestrating.adoc[Orchestrating multiple agents]. The supervisor pattern keeps coordination logic outside the model in deterministic workflow steps, which suits cases where you want explicit step ordering, retry policies per step, and external compensation.
+For request-based xref:sdk:agents.adoc[Agents] coordinated through a xref:sdk:workflows.adoc[Workflow] supervisor, see xref:sdk:agents/orchestrating.adoc[Multi-agent orchestration]. The supervisor pattern keeps coordination logic outside the model in deterministic workflow steps, which suits cases where you want explicit step ordering, retry policies per step, and external compensation.
 
 Choose the workflow approach when you want explicit, deterministic ordering. Choose Autonomous Agent capabilities when you want the model to decide what happens next based on the work in flight.
 
@@ -56,5 +56,5 @@ Choose the workflow approach when you want explicit, deterministic ordering. Cho
 * xref:sdk:autonomous-agents.adoc[Autonomous Agents]
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns]
 * xref:sdk:autonomous-agents/capabilities.adoc[Coordination capabilities]
-* xref:sdk:agents/orchestrating.adoc[Orchestrating multiple agents (workflow-based)]
+* xref:sdk:agents/orchestrating.adoc[Multi-agent orchestration (workflow-based)]
 * xref:concepts:inter-agent-comms.adoc[]

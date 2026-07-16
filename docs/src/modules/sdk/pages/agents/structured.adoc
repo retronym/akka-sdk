@@ -29,4 +29,4 @@ If you still do not get expected JSON responses from the model, you can combine 
 
 * xref:sdk:agents.adoc[Agents]
 * xref:sdk:serialization.adoc[Serialization]
-* xref:sdk:agents/prompt.adoc[Choosing the prompt]
+* xref:sdk:agents/prompt.adoc[Prompts]

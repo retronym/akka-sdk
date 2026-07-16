@@ -1,4 +1,4 @@
-= Choosing the prompt
+= Prompts
 
 include::ROOT:partial$include.adoc[]
 
@@ -149,5 +149,5 @@ xref:use-cases/rag-and-knowledge.adoc[RAG] is a technique to provide additional,
 == See also
 
 * xref:sdk:agents.adoc[Agents]
-* xref:sdk:agents/memory.adoc[Managing session memory]
+* xref:sdk:agents/memory.adoc[Session memory]
 * xref:sdk:agents/structured.adoc[Structured responses]

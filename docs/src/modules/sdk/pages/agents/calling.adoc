@@ -1,4 +1,4 @@
-= Calling agents
+= Agent invocation
 
 include::ROOT:partial$include.adoc[]
 
@@ -88,5 +88,5 @@ Dynamic dispatch and the registry are building blocks for planner-driven multi-a
 == See also
 
 * xref:sdk:agents.adoc[Agents]
-* xref:sdk:agents/orchestrating.adoc[Orchestrating multiple agents]
+* xref:sdk:agents/orchestrating.adoc[Multi-agent orchestration]
 * xref:sdk:component-and-service-calls.adoc[Component and service calls]
