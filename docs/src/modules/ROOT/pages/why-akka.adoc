@@ -44,7 +44,7 @@ Consistent, scalable development across teams. One platform with golden-path wor
 * xref:ROOT:who-uses-akka.adoc[Who Uses Akka] — Find the documentation path for your role
 * xref:getting-started:index.adoc[Tutorials] — Start building with Akka
 
-== See Also
+== See also
 
 * link:{url-blog-what-is-agentic}[What is Agentic AI?, window="new"]
 * link:{url-blog-experience-matters}[Agentic AI: Why Experience Matters More Than Hype, window="new"]

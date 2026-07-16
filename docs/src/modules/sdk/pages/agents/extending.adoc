@@ -206,3 +206,8 @@ By default, this value is set to 100. You can adjust this in your configuration:
 akka.javasdk.agent.max-tool-call-steps = 150
 ----
 
+== See also
+
+* xref:sdk:agents.adoc[Agents]
+* xref:sdk:mcp-endpoints.adoc[MCP Endpoints]
+* xref:sdk:agents/testing.adoc[Testing the agent]

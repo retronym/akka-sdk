@@ -52,4 +52,8 @@ include::example$doc-snippets/src/main/java/com/example/application/ActivityWork
 
 Clients subscribe to these notifications as described in xref:workflows.adoc#_subscribing_to_notifications[Subscribing to notifications]. The client can handle each notification type appropriately—initializing the UI on `LlmResponseStart`, appending text on `LlmResponseDelta`, and finalizing on `LlmResponseEnd`.
 
+== See also
 
+* xref:sdk:agents.adoc[Agents]
+* xref:sdk:http-endpoints.adoc[HTTP Endpoints]
+* xref:sdk:streaming.adoc[Streaming]

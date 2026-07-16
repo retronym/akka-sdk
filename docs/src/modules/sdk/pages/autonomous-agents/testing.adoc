@@ -103,7 +103,7 @@ The runtime treats `fail_task` as a terminal failure for the task. Use `failTask
 include::example$autonomous-agent-playground/src/test/java/demo/helloworld/QuestionAnswererIntegrationTest.java[tag=failure]
 ----
 
-== See Also
+== See also
 
 * xref:sdk:agents/testing.adoc[Testing request-based agents]
 * xref:sdk:autonomous-agents/client.adoc[Client API]

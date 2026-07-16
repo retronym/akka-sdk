@@ -63,7 +63,7 @@ The Agent's Effect defines the operations that Akka should perform when an incom
 
 For additional details, refer to xref:concepts:declarative-effects.adoc[Declarative Effects].
 
-== Basic Agent Structure
+== Basic agent structure
 
 An agent implementation has the following code structure.
 
@@ -171,7 +171,11 @@ This also illustrates the important point that the context of the request to the
 
 The ability to reach into the rest of a distributed Akka application to _augment_ requests makes behavior like Retrieval Augmented Generation (RAG) simple and less error prone than doing things manually without Akka.
 
-== See Also
+== Testing
+
+Test agents with the testkit's `TestModelProvider`, which substitutes configured responses for a real model so tests exercise the agent's logic, tools, and effects deterministically, without calling a real model. See xref:sdk:agents/testing.adoc[Testing the agent].
+
+== See also
 
 * xref:concepts:ai-agents.adoc[AI Agents concepts]
 * xref:sdk:autonomous-agents.adoc[Autonomous Agents]

@@ -30,7 +30,7 @@ The following sample projects demonstrate this pattern:
 * https://github.com/akka-samples/transfer-workflow-compensation[transfer-workflow-compensation,window="new"] -- transfer workflow with compensation logic for failure recovery
 * https://github.com/akka-samples/choreography-saga-quickstart[choreography-saga-quickstart,window="new"] -- choreography-based saga pattern for distributed coordination
 
-== See Also
+== See also
 
 * xref:sdk:workflows.adoc[]
 * xref:sdk:timed-actions.adoc[]

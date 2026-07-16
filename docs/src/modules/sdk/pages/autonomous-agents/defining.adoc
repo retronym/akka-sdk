@@ -204,7 +204,7 @@ Unlike a request-based agent, where the loader can be created per request to car
 
 NOTE: If the `load` method throws an exception, the current task fails.
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents/tasks.adoc[Tasks]
 * xref:sdk:autonomous-agents/capabilities.adoc[Coordination capabilities]

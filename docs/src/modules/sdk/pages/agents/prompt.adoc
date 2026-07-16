@@ -146,3 +146,8 @@ Although the system message has a dedicated method to use the prompt template, y
 
 xref:use-cases/rag-and-knowledge.adoc[RAG] is a technique to provide additional, relevant content in the user message.
 
+== See also
+
+* xref:sdk:agents.adoc[Agents]
+* xref:sdk:agents/memory.adoc[Managing session memory]
+* xref:sdk:agents/structured.adoc[Structured responses]

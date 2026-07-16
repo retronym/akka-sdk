@@ -340,7 +340,7 @@ include::example$autonomous-agent-playground/src/main/java/demo/consulting/appli
 
 The model decides at runtime whether to delegate a subtask (retaining ownership) or hand off the entire task (transferring ownership). Domain tools like `assessProblem` and `checkComplexity` give the model the information it needs to make this decision.
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns] for the conceptual background
 * xref:sdk:autonomous-agents/notifications.adoc[Notifications] for events emitted during coordination

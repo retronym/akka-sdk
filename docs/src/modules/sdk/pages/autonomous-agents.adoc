@@ -136,7 +136,11 @@ include::example$autonomous-agent-playground/src/main/java/demo/helloworld/api/Q
 
 `runSingleTask` returns the task id immediately, without waiting for the task to complete. The task runs asynchronously and is itself the durable record of the work: its status and typed result are recovered after restarts and queryable at any time with `componentClient.forTask(taskId).get(QuestionTasks.ANSWER)`. There is no need to wrap the call in a Workflow for durability or to await the result. See xref:sdk:autonomous-agents/client.adoc[] for details.
 
-== Topics
+== Testing
+
+Autonomous agents are tested in integration tests with a `TestModelProvider` registered per agent class. The mocked model completes, delegates, or hands off tasks through the same tool calls a real model would make. See xref:sdk:autonomous-agents/testing.adoc[Testing].
+
+== Autonomous agent topics
 
 xref:sdk:autonomous-agents/defining.adoc[Defining an autonomous agent]:: Building an `AgentDefinition`: accepted task types, tools, MCP endpoints, guardrails, iteration limit, model selection, and optional instructions. Covers how the `@Component` description captures the agent's purpose and expected outcome.
 
@@ -156,7 +160,7 @@ xref:sdk:autonomous-agents/testing.adoc[Testing]:: Mocking model responses with 
 
 Autonomous Agents are not replicated to other regions. The agent instances stay in the region where they were created and cannot be accessed directly from other regions. The tasks are replicated like xref:sdk:event-sourced-entities.adoc#_replication[any other entity]. Multi-region replication of Autonomous Agent state might be added later.
 
-== See Also
+== See also
 
 * xref:sdk:agents.adoc[Request-based Agents]
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns]

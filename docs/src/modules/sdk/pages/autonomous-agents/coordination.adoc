@@ -193,7 +193,7 @@ The coordination patterns compose at different levels. Some examples:
 
 *Delegative coordinator with sequential workers.* A coordinator fans out to workers, but each worker internally runs a multi-step pipeline (research, draft, self-review) before returning results.
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents/capabilities.adoc[Coordination capabilities] for the SDK constructs that implement these patterns
 * xref:sdk:autonomous-agents.adoc[Autonomous Agents]

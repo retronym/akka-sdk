@@ -51,7 +51,7 @@ For request-based xref:sdk:agents.adoc[Agents] coordinated through a xref:sdk:wo
 
 Choose the workflow approach when you want explicit, deterministic ordering. Choose Autonomous Agent capabilities when you want the model to decide what happens next based on the work in flight.
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents.adoc[Autonomous Agents]
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns]

@@ -169,7 +169,7 @@ Non-terminal transitions (created, assigned, started, reassigned) do not publish
 | link:{attachmentsdir}/api/akka/javasdk/agent/task/TaskNotification.Cancelled.html[`TaskNotification.Cancelled`] | Task was cancelled.
 |===
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents/client.adoc#agent-notifications[Subscribing to the notification stream]
 * xref:sdk:autonomous-agents/tasks.adoc[Tasks]

@@ -34,7 +34,7 @@ The following sample projects demonstrate aspects of this pattern:
 
 NOTE: A dedicated governance-focused sample may be needed for a full end-to-end walkthrough of this pattern.
 
-== See Also
+== See also
 
 * xref:sdk:agents/guardrails.adoc[]
 * xref:sdk:agents/classifiers.adoc[]

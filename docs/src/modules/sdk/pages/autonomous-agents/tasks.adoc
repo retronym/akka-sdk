@@ -175,7 +175,7 @@ include::example$doc-snippets/src/main/java/com/example/api/TaskNotificationEndp
 <2> Map each `TaskNotification` to a public representation so the wire shape is decoupled from the SDK record.
 <3> A small wire shape with a `kind` discriminator lets clients handle the four terminal cases without depending on SDK types.
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents/client.adoc[Client API]
 * xref:sdk:autonomous-agents/notifications.adoc[Notifications]

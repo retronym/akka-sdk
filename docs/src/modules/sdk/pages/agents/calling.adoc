@@ -84,3 +84,9 @@ include::example$doc-snippets/src/main/java/com/example/application/DynamicAgent
 ----
 
 Dynamic dispatch and the registry are building blocks for planner-driven multi-agent systems. For most multi-agent problems an xref:sdk:autonomous-agents.adoc[Autonomous Agent] coordinator with a `Delegation` capability is simpler and recommended; see xref:sdk:agents/orchestrating.adoc#_model_driven_orchestration[Model-driven orchestration]. Reach for `AgentRegistry` and `dynamicCall` when you need a custom planner that selects targets at runtime from an open-ended set of agents.
+
+== See also
+
+* xref:sdk:agents.adoc[Agents]
+* xref:sdk:agents/orchestrating.adoc[Orchestrating multiple agents]
+* xref:sdk:component-and-service-calls.adoc[Component and service calls]

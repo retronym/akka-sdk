@@ -49,7 +49,7 @@ For autonomous-style processing built on request-based xref:sdk:agents.adoc[Agen
 
 These demonstrate scheduling and external orchestration. For model-driven multi-step processes within a single component, prefer xref:sdk:autonomous-agents.adoc[Autonomous Agents].
 
-== See Also
+== See also
 
 * xref:sdk:autonomous-agents.adoc[Autonomous Agents]
 * xref:sdk:autonomous-agents/coordination.adoc[Coordination patterns]

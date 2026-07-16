@@ -47,7 +47,7 @@ Akka supports a range of application patterns:
 * xref:getting-started:index.adoc[Tutorials] — Start building
 * xref:sdk:spec-driven-development.adoc[Spec-Driven Development] — The primary development approach
 
-== See Also
+== See also
 
 * link:{url-akka-platform}[Akka Platform Overview, window="new"]
 * link:{url-akka-how-it-works}[How Akka Works, window="new"]
