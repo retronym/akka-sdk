@@ -24,9 +24,9 @@ The `onFailure` method can handle the following types of exceptions:
   ** `JsonParsingException` - Response parsing failures (as shown in structured responses)
 
 * **Unknown exceptions:**
-  ** `RuntimeException` - For any unexpected errors that don't fall into the above categories
+  ** `RuntimeException` - For any unexpected errors that do not fall into the above categories
 
-Apart from the listed specific exceptions, users can still encounter `RuntimeException` instances that wrap unexpected errors. Therefore, when handling errors in the `onFailure` method, it's recommended to always include a `default` case to handle any unknown exception types gracefully.
+Apart from the listed specific exceptions, users can still encounter `RuntimeException` instances that wrap unexpected errors. Therefore, when handling errors in the `onFailure` method, it is recommended to always include a `default` case to handle any unknown exception types gracefully.
 
 == Implementing fallback strategies
 

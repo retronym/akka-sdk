@@ -138,7 +138,7 @@ The real-estate customer service agent demonstrates how to combine Akka features
 link:https://github.com/akka-samples/real-estate-cs-agent[GitHub Repository, window="new"]
 
 == Trip booking with tools
-This app represents a travel agency that searches for flights and accommodations. It's composed by an LLM (Anthropic) using Spring AI and AI tools to find flights, accommodations and sending mails.
+This app represents a travel agency that searches for flights and accommodations. It is composed by an LLM (Anthropic) using Spring AI and AI tools to find flights, accommodations and sending mails.
 
 [%hardbreaks]
 **Concepts**: _Agent_, _Tools_, _Anthropic_, _Spring AI_, _Workflow_

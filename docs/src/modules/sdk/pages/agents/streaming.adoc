@@ -2,7 +2,7 @@
 
 include::ROOT:partial$include.adoc[]
 
-In AI chat applications, you've seen how responses are displayed word by word as they are generated. There are a few reasons for this. The first is that LLMs are _prediction_ engines. Each time a token (usually a word) is streamed to the response, the LLM will attempt to _predict_ the next word in the output. This causes the small delays between words.
+In AI chat applications, you have seen how responses are displayed word by word as they are generated. There are a few reasons for this. The first is that LLMs are _prediction_ engines. Each time a token (usually a word) is streamed to the response, the LLM will attempt to _predict_ the next word in the output. This causes the small delays between words.
 
 The other reason why responses are streamed is that it can take a very long time to generate the full response, so the user experience is much better getting the answer as a live stream of tokens. To support this real-time user experience, the agent can stream the model response tokens to an endpoint. These tokens can then be pushed to the client using server-sent events (SSE).
 

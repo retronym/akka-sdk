@@ -2,7 +2,7 @@
 
 include::ROOT:partial$include.adoc[]
 
-Agents can collaborate in many ways, from orchestration, to direct communication, to other patterns like swarms and teams. Many of these communication patterns make for great demos, but don’t scale well or run safely and securely in production environments.
+Agents can collaborate in many ways, from orchestration, to direct communication, to other patterns like swarms and teams. Many of these communication patterns make for great demos, but do not scale well or run safely and securely in production environments.
 
 The patterns flagged below as "avoid" are about ad-hoc protocol-level wiring between agents, where there is no platform-level durability, retry, or audit. Coordination that goes through Akka's component model, whether a xref:sdk:workflows.adoc[Workflow] supervisor or an xref:sdk:autonomous-agents.adoc[Autonomous Agent] coordination capability, is not in that category and is the recommended way to compose multi-agent systems.
 
@@ -45,7 +45,7 @@ Endpoint (API) -> Agent | Avoid leveraging protocols such as HTTP, JSON-RPC, gRP
  +
 ⚠️  **Avoid**
 
-| Endpoint (API) -> Endpoint (API) | Avoid having an endpoint call functions directly on another endpoint. This can create side effects that aren't captured by any of the durable event flows and can bypass the resiliency and scalability provided by Workflows. +
+| Endpoint (API) -> Endpoint (API) | Avoid having an endpoint call functions directly on another endpoint. This can create side effects that are not captured by any of the durable event flows and can bypass the resiliency and scalability provided by Workflows. +
  +
 ⚠️  **Avoid**
 
@@ -57,7 +57,7 @@ Well-architected agents are built to do one thing: accomplish one overarching go
 
 Consider the example of a travel planning agent. This agent that makes travel recommendations might utilize other agents like an airline reservation agent, a weather agent, a traffic agent, and may optionally make use of half a dozen or more agents.
 
-On the surface this seems like a good idea, and that’s what makes it so dangerous. If the top-level planning agent makes calls directly to the other agents, then that supervision structure is permanently fixed that way. The planning agent cannot be composed and used by other workflows. 
+On the surface this seems like a good idea, and that is what makes it so dangerous. If the top-level planning agent makes calls directly to the other agents, then that supervision structure is permanently fixed that way. The planning agent cannot be composed and used by other workflows. 
 
 The simple weather service can be used by any composition or arrangement of agents because it does one thing, and it does not call any other agents. If one agent relies on communicating with other specific agents, it has more consequences than just enforcing a rigid hierarchy.
 
@@ -81,7 +81,7 @@ When you want the model to decide the next agent rather than encoding the sequen
 
 There is an Akka component client for all Akka components, including Agents. While an Agent should not use this to talk to other Agents, Endpoints and Workflows will use this to trigger and orchestrate Agents.
 
-The component client only works to communicate with components within the same service. Outside the service you'll need to use service-to-service eventing or standard protocols like HTTP, gRPC, or even MCP.
+The component client only works to communicate with components within the same service. Outside the service you will need to use service-to-service eventing or standard protocols like HTTP, gRPC, or even MCP.
 
 == Message brokers
 
@@ -91,17 +91,17 @@ Consumers and Workflows within the agent’s service can react to messages as we
 
 == Endpoint client (intra-project)
 
-If you need to communicate with an endpoint that is defined _within_ the same project, then Akka has a component client to make this easy. This saves you from having to write code that creates a client that understands the protocol of that endpoint, whether it’s HTTP, gRPC, or MCP.
+If you need to communicate with an endpoint that is defined _within_ the same project, then Akka has a component client to make this easy. This saves you from having to write code that creates a client that understands the protocol of that endpoint, whether it is HTTP, gRPC, or MCP.
 
 == HTTP or gRPC client (external)
 
-If your orchestration workflow needs to communicate with external services that expose HTTP or gRPC APIs, then you can use Akka’s `HttpClientProvider` and `GrpcClientProvider` clients to communicate with those. As with all other communication methods, this shouldn’t be done from inside an agent, but from within consumers or orchestration workflows.
+If your orchestration workflow needs to communicate with external services that expose HTTP or gRPC APIs, then you can use Akka’s `HttpClientProvider` and `GrpcClientProvider` clients to communicate with those. As with all other communication methods, this should not be done from inside an agent, but from within consumers or orchestration workflows.
 
 == MCP
 
 MCP, the Model Context Protocol, is a protocol that allows agents to use LLMs to convert intent described in a prompt into structured tool calls. These tools can be used to do anything from manipulate a file system to query customer-specific data from a private database. 
 
-AI assistants modify their system prompts so that they include a list of tool calls exposed by configured MCP servers. It’s very tempting to put calls to other agents inside these tool callbacks, but that too is dangerous.
+AI assistants modify their system prompts so that they include a list of tool calls exposed by configured MCP servers. It is very tempting to put calls to other agents inside these tool callbacks, but that too is dangerous.
 
 There is no automatic failover or retry or timeout system for when an agent invokes a tool via MCP. This means any agent-to-agent communication done inside of an MCP tool is inherently unreliable and brittle. Be mindful about using MCP for agent-to-agent calls.
 
@@ -111,4 +111,4 @@ Typically the LLM will identify the MCP servers to use from prompt and context a
 
 While MCP is a “tool” protocol, there are other protocols designed specifically for direct communication between agents, such as A2A, ACP, and others. These protocols are misleading in that they seem to promote direct point-to-point communication between agents. 
 
-It might seem like trivial semantics, but when you see A2A and ACP, you should think of leveraging an Akka Workflow to make use of those protocols on behalf of the system, which is composed of two or more agents. It’s agent-to-agent communication through a responsible, reliable orchestrating partner defined as a `Workflow`. 
+It might seem like trivial semantics, but when you see A2A and ACP, you should think of leveraging an Akka Workflow to make use of those protocols on behalf of the system, which is composed of two or more agents. It is agent-to-agent communication through a responsible, reliable orchestrating partner defined as a `Workflow`. 

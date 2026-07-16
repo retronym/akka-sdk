@@ -154,7 +154,7 @@ xref:sdk:autonomous-agents/testing.adoc[Testing]:: Mocking model responses with 
 
 == Multi-region replication
 
-Autonomous Agents are not replicated to other regions. The agent instances stay in the region where they were created and can't be accessed directly from other regions. The tasks are replicated like xref:sdk:event-sourced-entities.adoc#_replication[any other entity]. Multi-region replication of Autonomous Agent state might be added later.
+Autonomous Agents are not replicated to other regions. The agent instances stay in the region where they were created and cannot be accessed directly from other regions. The tasks are replicated like xref:sdk:event-sourced-entities.adoc#_replication[any other entity]. Multi-region replication of Autonomous Agent state might be added later.
 
 == See Also
 
