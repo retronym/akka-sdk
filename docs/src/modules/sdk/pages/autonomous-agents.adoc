@@ -126,7 +126,7 @@ The result type is a Java record:
 include::example$autonomous-agent-playground/src/main/java/demo/helloworld/application/Answer.java[tag=class]
 ----
 
-To run a task, ask the `ComponentClient` to spin up an instance and run a single task:
+To run a task, ask the `ComponentClient` to start an instance and run a single task:
 
 [source,java,indent=0]
 .{sample-base-url}/autonomous-agent-playground/src/main/java/demo/helloworld/api/QuestionEndpoint.java[QuestionEndpoint.java]
