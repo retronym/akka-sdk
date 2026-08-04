@@ -2676,7 +2676,17 @@ public sealed interface ModelProvider {
   enum BedrockPromptCachePlacement {
     AFTER_SYSTEM,
     AFTER_USER_MESSAGE,
-    AFTER_TOOLS
+    AFTER_TOOLS,
+    /**
+     * Cache point after the most recent user message, so it advances as the conversation grows.
+     *
+     * <p>This is the placement that pays off in a tool-calling loop, because the tokens accumulate
+     * in the conversation and not in the system message or the tool definitions. Pair it with
+     * {@link MemoryProvider.LimitedWindowMemoryProvider#readWindow(int, int)}: with a sliding
+     * window the start of the prompt moves on every turn and there is nothing for the cache point
+     * to hit.
+     */
+    AFTER_LAST_USER_MESSAGE
   }
 
   record Bedrock(

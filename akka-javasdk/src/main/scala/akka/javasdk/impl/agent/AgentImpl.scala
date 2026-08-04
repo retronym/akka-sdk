@@ -329,6 +329,8 @@ private[impl] object AgentImpl {
               SpiAgent.ModelProvider.BedrockPromptCachePlacement.AfterUserMessage
             case ModelProvider.BedrockPromptCachePlacement.AFTER_TOOLS =>
               SpiAgent.ModelProvider.BedrockPromptCachePlacement.AfterTools
+            case ModelProvider.BedrockPromptCachePlacement.AFTER_LAST_USER_MESSAGE =>
+              SpiAgent.ModelProvider.BedrockPromptCachePlacement.AfterLastUserMessage
           })
       case p: ModelProvider.MistralAi =>
         new SpiAgent.ModelProvider.MistralAi(
@@ -808,7 +810,7 @@ private[impl] final class AgentImpl(
           serializer,
           agentRegistry,
           materializer,
-          new MemorySettings(p.read(), p.write(), p.readLastN(), p.filters()))
+          new MemorySettings(p.read(), p.write(), p.readLastN(), p.filters(), p.readLowWaterMark()))
 
       case p: MemoryProvider.CustomMemoryProvider =>
         // Custom providers own their own filtering/limit/storage semantics; the journal-fallback

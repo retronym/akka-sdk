@@ -33,11 +33,26 @@ import scala.PartialFunction;
 @InternalApi
 public final class SessionMemoryClient implements SessionMemory {
 
+  /**
+   * @param historyLimit the maximum number of messages to read, absent for no limit
+   * @param historyLowWaterMark when present, the history is read as a block-aligned window between
+   *     this mark and {@code historyLimit} instead of as a sliding window, so that the prompt
+   *     prefix stays stable across turns
+   */
   public record MemorySettings(
       boolean read,
       boolean write,
       Optional<Integer> historyLimit,
-      List<MemoryFilter> memoryFilters) {
+      List<MemoryFilter> memoryFilters,
+      Optional<Integer> historyLowWaterMark) {
+
+    public MemorySettings(
+        boolean read,
+        boolean write,
+        Optional<Integer> historyLimit,
+        List<MemoryFilter> memoryFilters) {
+      this(read, write, historyLimit, memoryFilters, Optional.empty());
+    }
 
     static MemorySettings disabled() {
       return new MemorySettings(false, false, Optional.empty(), List.of());
@@ -160,7 +175,9 @@ public final class SessionMemoryClient implements SessionMemory {
             .method(SessionMemoryEntity::fetchHistory)
             .invoke(
                 new SessionMemoryEntity.GetHistoryCmd(
-                    memorySettings.historyLimit, memorySettings.memoryFilters));
+                    memorySettings.historyLimit,
+                    memorySettings.memoryFilters,
+                    memorySettings.historyLowWaterMark));
 
     return switch (result) {
       case SessionHistoryResult.Loaded(var history) -> {
@@ -209,7 +226,9 @@ public final class SessionMemoryClient implements SessionMemory {
     var filtered =
         MemoryHistoryUtils.applyFilters(
             messages, memorySettings.memoryFilters, MemoryHistoryUtils.roleLookup(agentRegistry));
-    var trimmed = MemoryHistoryUtils.trimToLastN(filtered, memorySettings.historyLimit);
+    var trimmed =
+        MemoryHistoryUtils.trim(
+            filtered, memorySettings.historyLimit, memorySettings.historyLowWaterMark);
 
     logger.debug(
         "History retrieved from journal for sessionId [{}], size [{}]", sessionId, trimmed.size());
