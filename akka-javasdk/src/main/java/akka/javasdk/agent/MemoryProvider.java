@@ -142,8 +142,20 @@ public sealed interface MemoryProvider {
    * }</pre>
    */
   record LimitedWindowMemoryProvider(
-      Optional<Integer> readLastN, boolean read, boolean write, List<MemoryFilter> filters)
+      Optional<Integer> readLastN,
+      boolean read,
+      boolean write,
+      List<MemoryFilter> filters,
+      Optional<Integer> readLowWaterMark)
       implements MemoryProvider {
+
+    /**
+     * A provider that reads a sliding window, or the whole history when {@code readLastN} is empty.
+     */
+    public LimitedWindowMemoryProvider(
+        Optional<Integer> readLastN, boolean read, boolean write, List<MemoryFilter> filters) {
+      this(readLastN, read, write, filters, Optional.empty());
+    }
 
     /**
      * Creates a read-only version of this memory provider.
@@ -153,7 +165,7 @@ public sealed interface MemoryProvider {
      * @return A new memory provider with writing disabled
      */
     public MemoryProvider readOnly() {
-      return new LimitedWindowMemoryProvider(readLastN, true, false, List.of());
+      return new LimitedWindowMemoryProvider(readLastN, true, false, List.of(), readLowWaterMark);
     }
 
     /**
@@ -183,7 +195,8 @@ public sealed interface MemoryProvider {
      * @return A new memory provider with writing disabled and the specified filters
      */
     public MemoryProvider readOnly(MemoryFilter.MemoryFilterSupplier filtersSupplier) {
-      return new LimitedWindowMemoryProvider(readLastN, true, false, filtersSupplier.get());
+      return new LimitedWindowMemoryProvider(
+          readLastN, true, false, filtersSupplier.get(), readLowWaterMark);
     }
 
     /**
@@ -194,7 +207,7 @@ public sealed interface MemoryProvider {
      * @return A new memory provider with reading disabled
      */
     public MemoryProvider writeOnly() {
-      return new LimitedWindowMemoryProvider(readLastN, false, true, List.of());
+      return new LimitedWindowMemoryProvider(readLastN, false, true, List.of(), readLowWaterMark);
     }
 
     /**
@@ -270,6 +283,79 @@ public sealed interface MemoryProvider {
      */
     public MemoryProvider filtered(MemoryFilter.MemoryFilterSupplier filtersSupplier) {
       return new LimitedWindowMemoryProvider(Optional.empty(), read, write, filtersSupplier.get());
+    }
+
+    /**
+     * Creates a new memory provider that reads a window whose start moves in blocks rather than on
+     * every turn.
+     *
+     * <p>Prefer this over {@link #readLast(int)} when the model supports prompt caching. {@code
+     * readLast} drops the oldest message every turn, so the start of the prompt differs on every
+     * call and no cached prefix is ever reused. Here the start stays put until the number of
+     * messages read would exceed {@code highWaterMark}, then jumps forward by {@code highWaterMark
+     * - lowWaterMark}, leaving the prompt unchanged in between. This works with Anthropic and
+     * Bedrock prompt caching and with the automatic prefix caching in servers such as vLLM, and
+     * needs no provider configuration.
+     *
+     * <p>The gap between the marks is the trade-off: a wide gap keeps the prompt stable for longer
+     * but discards more history when the start does move.
+     *
+     * <p>Example usage:
+     *
+     * <pre>{@code
+     * // Read at most 100 messages, dropping back to 60 when exceeded, so the
+     * // start of the prompt moves once every 40 turns instead of every turn.
+     * MemoryProvider.limitedWindow()
+     *     .readWindow(100, 60);
+     * }</pre>
+     *
+     * @param highWaterMark the maximum number of messages to read from memory
+     * @param lowWaterMark the number of messages to drop back to, which must be below {@code
+     *     highWaterMark}
+     * @return A new memory provider that reads a block-aligned window
+     */
+    public MemoryProvider readWindow(int highWaterMark, int lowWaterMark) {
+      checkWaterMarks(highWaterMark, lowWaterMark);
+      return new LimitedWindowMemoryProvider(
+          Optional.of(highWaterMark), read, write, List.of(), Optional.of(lowWaterMark));
+    }
+
+    /**
+     * Creates a new memory provider that reads a block-aligned window with filters applied.
+     *
+     * <p>Filters are applied first, then the window is taken from the filtered messages. See {@link
+     * #readWindow(int, int)} for what the marks mean.
+     *
+     * @param highWaterMark the maximum number of messages to read from memory
+     * @param lowWaterMark the number of messages to drop back to, which must be below {@code
+     *     highWaterMark}
+     * @param filtersSupplier a supplier that provides the list of filters to apply
+     * @return A new memory provider that reads a block-aligned window with the specified filters
+     */
+    public MemoryProvider readWindow(
+        int highWaterMark, int lowWaterMark, MemoryFilter.MemoryFilterSupplier filtersSupplier) {
+      checkWaterMarks(highWaterMark, lowWaterMark);
+      return new LimitedWindowMemoryProvider(
+          Optional.of(highWaterMark),
+          read,
+          write,
+          filtersSupplier.get(),
+          Optional.of(lowWaterMark));
+    }
+
+    private static void checkWaterMarks(int highWaterMark, int lowWaterMark) {
+      if (highWaterMark <= lowWaterMark) {
+        throw new IllegalArgumentException(
+            "highWaterMark ["
+                + highWaterMark
+                + "] must exceed lowWaterMark ["
+                + lowWaterMark
+                + "]");
+      }
+      if (lowWaterMark < 0) {
+        throw new IllegalArgumentException(
+            "lowWaterMark [" + lowWaterMark + "] must not be negative");
+      }
     }
   }
 

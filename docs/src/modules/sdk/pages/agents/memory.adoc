@@ -35,6 +35,17 @@ Example with `limitedWindow` memory provider:
 include::example$doc-snippets/src/main/java/com/example/application/MyAgentMore.java[tag=read-last]
 ----
 
+`readLast` drops the oldest message on every turn once the window is full, which means the start of the prompt is different on every call. Models that support prompt caching can only reuse a cached prefix when the start of the prompt is unchanged, so a sliding window prevents any cache from being used.
+
+`readWindow` reads a window whose start moves in steps instead. It stays put until the number of messages read would exceed the high water mark, then jumps forward to the low water mark, leaving the start of the prompt unchanged in between:
+
+[source,java,indent=0]
+----
+include::example$doc-snippets/src/main/java/com/example/application/MyAgentMore.java[tag=read-window]
+----
+<1> Read at most 100 messages, dropping back to 60 when that is exceeded, so the start of the prompt moves once every 40 turns.
+
+This applies to Anthropic and Bedrock prompt caching, and to the automatic prefix caching in self-hosted servers such as vLLM. It requires no model provider configuration. The gap between the two marks is the trade-off: a wide gap keeps the prompt stable for longer, but discards more history when the start does move.
 
 Example disabling session memory for the agent:
 [source,java,indent=0]
@@ -50,7 +61,7 @@ The link:{attachmentsdir}/api/akka/javasdk/agent/MemoryProvider.html[`MemoryProv
 * `MemoryProvider.limitedWindow()` - Configures memory with options to, e.g.:
   ** Setup **read only** memory, in which the agent reads the memory but does not allow write any interactions to it. This is ideal for multi-agent sessions where some agents can store memory and others cannot.
   ** Setup **write only** memory, in which the agent register the interactions to the session memory but does not take those in consideration when processing the user message.
-  ** Limit the amount of messages used as context in each interaction, i.e. use only the last N number of messages for context (good for token usage control).
+  ** Limit the amount of messages used as context in each interaction, i.e. use only the last N number of messages for context (good for token usage control), or read a window whose start moves in steps so that prompt caching can be used.
   ** Apply **filters** to selectively include or exclude messages based on agent component ID or role.
 * `MemoryProvider.custom()` - Allows you to provide a custom implementation for the `SessionMemory` interface and store the session memory externally in a database / service of your preference.
 

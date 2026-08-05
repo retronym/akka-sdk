@@ -408,18 +408,31 @@ public final class SessionMemoryEntity extends EventSourcedEntity<State, Event> 
         .toList();
   }
 
-  public record GetHistoryCmd(Optional<Integer> lastNMessages, List<MemoryFilter> memoryFilters) {
+  /**
+   * @param lastNMessages the maximum number of messages to return, absent for no limit
+   * @param lowWaterMark when present, return a block-aligned window between this mark and {@code
+   *     lastNMessages} instead of the last N messages, so that the start of the returned history
+   *     stays put across turns. Absent when the caller runs an older SDK.
+   */
+  public record GetHistoryCmd(
+      Optional<Integer> lastNMessages,
+      List<MemoryFilter> memoryFilters,
+      Optional<Integer> lowWaterMark) {
 
     public GetHistoryCmd() {
-      this(Optional.empty(), List.of());
+      this(Optional.empty(), List.of(), Optional.empty());
     }
 
     public GetHistoryCmd(Optional<Integer> lastNMessages) {
-      this(lastNMessages, List.of());
+      this(lastNMessages, List.of(), Optional.empty());
     }
 
     public GetHistoryCmd(List<MemoryFilter> memoryFilters) {
-      this(Optional.empty(), memoryFilters);
+      this(Optional.empty(), memoryFilters, Optional.empty());
+    }
+
+    public GetHistoryCmd(Optional<Integer> lastNMessages, List<MemoryFilter> memoryFilters) {
+      this(lastNMessages, memoryFilters, Optional.empty());
     }
   }
 
@@ -446,12 +459,15 @@ public final class SessionMemoryEntity extends EventSourcedEntity<State, Event> 
     return effects().reply(buildSessionHistory(cmd));
   }
 
-  /* In case cmd.lastNMessages is null, we want to move on with an Optional.empty and not keep checking this. */
+  /* Deserialization from an older caller leaves the added fields null, so normalize once here rather
+   * than checking at every use. */
   private GetHistoryCmd sanitizeCmd(GetHistoryCmd cmd) {
-    if (cmd.lastNMessages == null) {
-      return new GetHistoryCmd(cmd.memoryFilters);
-    } else {
+    var lastNMessages = cmd.lastNMessages == null ? Optional.<Integer>empty() : cmd.lastNMessages;
+    var lowWaterMark = cmd.lowWaterMark == null ? Optional.<Integer>empty() : cmd.lowWaterMark;
+    if (lastNMessages == cmd.lastNMessages && lowWaterMark == cmd.lowWaterMark) {
       return cmd;
+    } else {
+      return new GetHistoryCmd(lastNMessages, cmd.memoryFilters, lowWaterMark);
     }
   }
 
@@ -476,7 +492,10 @@ public final class SessionMemoryEntity extends EventSourcedEntity<State, Event> 
     // Truncated: we can still satisfy a "last N" request when the in-memory state (after
     // filtering) already contains at least N matches, because truncation only drops the oldest
     // messages — anything newer is guaranteed to still be in memory.
-    if (sanitizedCmd.lastNMessages.isPresent()) {
+    //
+    // A block-aligned window cannot take this shortcut: its start is derived from the total message
+    // count, so a partial in-memory view would place it somewhere else than the journal path does.
+    if (sanitizedCmd.lastNMessages.isPresent() && sanitizedCmd.lowWaterMark.isEmpty()) {
       var results = buildSessionHistory(sanitizedCmd);
       if (results.messages().size() >= sanitizedCmd.lastNMessages.get()) {
         return effects().reply(new SessionHistoryResult.Loaded(results));
@@ -490,8 +509,10 @@ public final class SessionMemoryEntity extends EventSourcedEntity<State, Event> 
   }
 
   private SessionHistory buildSessionHistory(GetHistoryCmd cmd) {
-    var filtered = filteredMessages(cmd.memoryFilters);
-    var trimmed = MemoryHistoryUtils.trimToLastN(filtered, cmd.lastNMessages);
+    var sanitizedCmd = sanitizeCmd(cmd);
+    var filtered = filteredMessages(sanitizedCmd.memoryFilters);
+    var trimmed =
+        MemoryHistoryUtils.trim(filtered, sanitizedCmd.lastNMessages, sanitizedCmd.lowWaterMark);
     // make sure this returns a copy of the list and not the list itself
     return new SessionHistory(
         new LinkedList<>(trimmed), commandContext().sequenceNumber(), currentState().tokenUsage);

@@ -58,6 +58,20 @@ public interface MyAgentMore {
     // end::read-last[]
   }
 
+  @Component(id = "my-agent-readwindow")
+  public class MyAgentReadWindowMemory extends Agent {
+
+    // tag::read-window[]
+    public Effect<String> ask(String question) {
+      return effects()
+        .memory(MemoryProvider.limitedWindow().readWindow(100, 60)) // <1>
+        .systemMessage("You are a helpful...")
+        .userMessage(question)
+        .thenReply();
+    }
+    // end::read-window[]
+  }
+
   @Component(id = "my-agent-filter")
   public class MyAgentWithFilter extends Agent {
 

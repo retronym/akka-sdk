@@ -103,7 +103,7 @@ Access these documentation files for detailed patterns:
 - Stateless design (no mutable state in agent class)
 - Session memory automatic via session ID (shared across agents with same session ID)
 - Session ID typically UUID for new interactions, or workflow ID for orchestration
-- Control memory with `MemoryProvider.none()`, `.limitedWindow()`, or `.limitedWindow().readLast(N)`
+- Control memory with `MemoryProvider.none()`, `.limitedWindow()`, `.limitedWindow().readLast(N)`, or `.limitedWindow().readWindow(high, low)` which keeps the prompt prefix stable so prompt caching can be used
 - In multi-agent sessions, restrict what an agent sees with `MemoryFilter.includeFromAgentId(...)`, `.excludeFromAgentId(...)`, or `.includeFromAgentRole(...)`; the factories return a supplier that chains fluently
 - Structured responses: use `responseConformsTo(Class)` (preferred) or `responseAs(Class)` with manual JSON instructions
 - Model config: prefer default in config, override with `.model(ModelProvider.openAi()...)` if needed

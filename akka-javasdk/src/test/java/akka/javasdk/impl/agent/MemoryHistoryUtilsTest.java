@@ -5,6 +5,7 @@
 package akka.javasdk.impl.agent;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import akka.javasdk.agent.AgentRegistry;
 import akka.javasdk.agent.MemoryFilter;
@@ -249,5 +250,61 @@ public class MemoryHistoryUtilsTest {
     var trimmed = MemoryHistoryUtils.trimToLastN(filtered, Optional.of(4));
 
     assertThat(trimmed).containsExactly(u3, a3, u4, a4);
+  }
+
+  // --- trimToStableWindow ----------------------------------------------------
+
+  private static List<SessionMessage> messages(int count) {
+    var messages = new java.util.ArrayList<SessionMessage>();
+    for (int i = 0; i < count; i++) {
+      messages.add(user("a", "m" + i));
+    }
+    return List.copyOf(messages);
+  }
+
+  @Test
+  public void trimToStableWindowReturnsInputWhenWithinHighWaterMark() {
+    var messages = messages(100);
+    assertThat(MemoryHistoryUtils.trimToStableWindow(messages, 100, 60)).isSameAs(messages);
+  }
+
+  @Test
+  public void trimToStableWindowDropsToLowWaterMarkWhenExceeded() {
+    assertThat(MemoryHistoryUtils.trimToStableWindow(messages(101), 100, 60)).hasSize(61);
+  }
+
+  @Test
+  public void trimToStableWindowKeepsTheSameStartUntilTheNextBlock() {
+    // The retained messages grow by one each turn while the start stays on m40.
+    for (int total = 101; total <= 140; total++) {
+      var window = MemoryHistoryUtils.trimToStableWindow(messages(total), 100, 60);
+      assertThat(window.get(0)).isEqualTo(user("a", "m40"));
+      assertThat(window).hasSize(total - 40);
+    }
+  }
+
+  @Test
+  public void trimToStableWindowAdvancesByOneBlock() {
+    assertThat(MemoryHistoryUtils.trimToStableWindow(messages(141), 100, 60).get(0))
+        .isEqualTo(user("a", "m80"));
+    assertThat(MemoryHistoryUtils.trimToStableWindow(messages(181), 100, 60).get(0))
+        .isEqualTo(user("a", "m120"));
+  }
+
+  @Test
+  public void trimToStableWindowNeverExceedsTheHighWaterMark() {
+    for (int total = 1; total <= 500; total++) {
+      assertThat(MemoryHistoryUtils.trimToStableWindow(messages(total), 100, 60).size())
+          .isLessThanOrEqualTo(100);
+    }
+  }
+
+  @Test
+  public void trimToStableWindowRejectsMarksThatAreNotOrdered() {
+    var messages = messages(10);
+    assertThatThrownBy(() -> MemoryHistoryUtils.trimToStableWindow(messages, 60, 60))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> MemoryHistoryUtils.trimToStableWindow(messages, 10, -1))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

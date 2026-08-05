@@ -808,7 +808,7 @@ private[impl] final class AgentImpl(
           serializer,
           agentRegistry,
           materializer,
-          new MemorySettings(p.read(), p.write(), p.readLastN(), p.filters()))
+          new MemorySettings(p.read(), p.write(), p.readLastN(), p.filters(), p.readLowWaterMark()))
 
       case p: MemoryProvider.CustomMemoryProvider =>
         // Custom providers own their own filtering/limit/storage semantics; the journal-fallback
